@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # -----------------------------------------------------------
+  # BASE DE DATOS PARA KEYCLOAK
+  # -----------------------------------------------------------
+  keycloak-db:
+    image: postgres:15
+    container_name: seguridad_keycloak_db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak_admin
+      POSTGRES_PASSWORD: keycloak_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - keycloak_data:/var/lib/postgresql/data
+    networks:
+      - seguridad_net
+
+  # -----------------------------------------------------------
+  # KEYCLOAK (Gestor de Identidades y Tokens JWT)
+  # -----------------------------------------------------------
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.1
+    container_name: seguridad_keycloak
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak_admin
+      KC_DB_PASSWORD: keycloak_password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      # --- NUEVO: Configuración para el túnel de Codespaces ---
+      KC_PROXY: edge
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_URL: "https://effective-guide-4xg6v5px5wq2jjpr-8080.app.github.dev"
+      KC_HOSTNAME_ADMIN_URL: "https://effective-guide-4xg6v5px5wq2jjpr-8080.app.github.dev"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - keycloak-db
+    networks:
+      - seguridad_net
+
+  # -----------------------------------------------------------
+  # HASHICORP VAULT (Bóveda de Claves y Cifrado)
+  # -----------------------------------------------------------
+  vault:
+    image: hashicorp/vault:1.15
+    container_name: seguridad_vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "llave-maestra-vault"
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - seguridad_net
+
+networks:
+  seguridad_net:
+    driver: bridge
+
+volumes:
+  keycloak_data:
