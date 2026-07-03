@@ -35,8 +35,8 @@ services:
       # --- NUEVO: Configuración para el túnel de Codespaces ---
       KC_PROXY: edge
       KC_HOSTNAME_STRICT: "false"
-      KC_HOSTNAME_URL: "https://effective-guide-4xg6v5px5wq2jjpr-8080.app.github.dev"
-      KC_HOSTNAME_ADMIN_URL: "https://effective-guide-4xg6v5px5wq2jjpr-8080.app.github.dev"
+      KC_HOSTNAME_URL: http://localhost:8080
+      KC_HOSTNAME_ADMIN_URL: http://localhost:8080
     ports:
       - "8080:8080"
     depends_on:
